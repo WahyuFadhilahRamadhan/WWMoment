@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ImagePlus, Loader2, X } from "lucide-react";
@@ -259,12 +260,12 @@ export default function UploadForm() {
           {isSubmitting ? "Sharing…" : "Share Your Moment"}
         </button>
 
-        <a
+        <Link
           href="/gallery"
           className="block text-center text-xs text-emerald/70 hover:text-emerald underline underline-offset-4"
         >
           View the live wedding gallery
-        </a>
+        </Link>
       </form>
 
       <SuccessModal

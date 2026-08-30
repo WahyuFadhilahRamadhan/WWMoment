@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ArrowLeft,
+  Camera,
   Download,
   Grid3x3,
   Lock,
@@ -66,13 +69,22 @@ export default function GalleryView() {
     <div className="flex flex-1 flex-col min-h-screen">
       <header className="sticky top-0 z-30 bg-cream/90 backdrop-blur border-b border-cream-deep px-4 py-3">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="uppercase tracking-[0.25em] text-[10px] text-gold font-medium">
-              Live Gallery
-            </p>
-            <h1 className="font-serif text-xl text-emerald leading-tight">
-              Our Wedding Moments
-            </h1>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-1 rounded-full border border-cream-deep p-2 text-emerald hover:bg-emerald-soft"
+              aria-label="Back to upload page"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <p className="uppercase tracking-[0.25em] text-[10px] text-gold font-medium">
+                Live Gallery
+              </p>
+              <h1 className="font-serif text-xl text-emerald leading-tight">
+                Our Wedding Moments
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -172,16 +184,18 @@ export default function GalleryView() {
               ))}
             </div>
           )}
-
-          <footer className="mt-10 pt-6 border-t border-cream-deep text-center">
-            <p className="font-serif text-2xl text-emerald">
-              The Wedding of Wahyu &amp; Wanda
-            </p>
-          </footer>
         </div>
       ) : (
         <Slideshow photos={slideshowPhotos} globalFilter={globalFilter} />
       )}
+
+      <Link
+        href="/"
+        className="fixed bottom-5 right-5 z-30 flex items-center gap-2 rounded-full bg-emerald text-cream px-4 py-3 text-xs font-medium shadow-lg hover:bg-emerald-light"
+      >
+        <Camera className="h-4 w-4" />
+        Upload Photo
+      </Link>
 
       <AdminGate
         open={gateOpen}

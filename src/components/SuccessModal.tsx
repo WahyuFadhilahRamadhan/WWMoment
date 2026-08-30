@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -91,12 +92,12 @@ export default function SuccessModal({
               >
                 Share Another Moment
               </button>
-              <a
+              <Link
                 href="/gallery"
-                className="w-full rounded-full border border-emerald/30 text-emerald py-3 text-sm font-medium tracking-wide hover:bg-emerald-soft transition-colors"
+                className="w-full rounded-full border border-emerald/30 text-emerald py-3 text-sm font-medium tracking-wide hover:bg-emerald-soft transition-colors flex items-center justify-center"
               >
                 View Live Gallery
-              </a>
+              </Link>
             </div>
           </motion.div>
         </motion.div>
