@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Quote } from "lucide-react";
+import { Download, Quote, Trash2 } from "lucide-react";
 import { getFilterClassName } from "@/lib/filters";
 import { downloadSinglePhoto } from "@/lib/downloadPhotos";
 import type { FilterStyle, GuestbookPhoto } from "@/lib/types";
@@ -10,6 +10,7 @@ interface PhotoCardProps {
   globalFilter: FilterStyle | "per-photo";
   isAdmin: boolean;
   onClick?: () => void;
+  onDelete?: () => void;
 }
 
 export default function PhotoCard({
@@ -17,6 +18,7 @@ export default function PhotoCard({
   globalFilter,
   isAdmin,
   onClick,
+  onDelete,
 }: PhotoCardProps) {
   const filterClass =
     globalFilter === "per-photo"
@@ -51,17 +53,30 @@ export default function PhotoCard({
         </div>
 
         {isAdmin && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              downloadSinglePhoto(photo);
-            }}
-            className="absolute top-2 right-2 rounded-full bg-white/90 p-1.5 text-emerald shadow hover:bg-white"
-            aria-label="Download photo"
-          >
-            <Download className="h-3.5 w-3.5" />
-          </button>
+          <div className="absolute top-2 right-2 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadSinglePhoto(photo);
+              }}
+              className="rounded-full bg-white/90 p-1.5 text-emerald shadow hover:bg-white"
+              aria-label="Download photo"
+            >
+              <Download className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.();
+              }}
+              className="rounded-full bg-white/90 p-1.5 text-red-600 shadow hover:bg-white"
+              aria-label="Delete photo"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         )}
       </div>
 

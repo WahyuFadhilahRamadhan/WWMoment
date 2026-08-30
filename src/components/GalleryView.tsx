@@ -2,34 +2,32 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  Camera,
-  Download,
-  Grid3x3,
-  Lock,
-  Play,
-  ShieldCheck,
-  Unlock,
-} from "lucide-react";
+import { ArrowLeft, Download, Grid3x3, Play } from "lucide-react";
 import PhotoCard from "./PhotoCard";
+import PhotoLightbox from "./PhotoLightbox";
 import Slideshow from "./Slideshow";
-import AdminGate from "./AdminGate";
 import { supabase, PHOTOS_TABLE } from "@/lib/supabase";
 import { exportMetadataCsv } from "@/lib/downloadPhotos";
+import { deletePhotoAsAdmin } from "@/lib/adminApi";
 import { FILTER_PRESETS } from "@/lib/filters";
 import type { FilterStyle, GuestbookPhoto } from "@/lib/types";
 
 type ViewMode = "grid" | "slideshow";
 type GlobalFilter = FilterStyle | "per-photo";
 
-export default function GalleryView() {
+interface GalleryViewProps {
+  initialIsAdmin: boolean;
+}
+
+export default function GalleryView({ initialIsAdmin }: GalleryViewProps) {
   const [photos, setPhotos] = useState<GuestbookPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [globalFilter, setGlobalFilter] = useState<GlobalFilter>("per-photo");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [gateOpen, setGateOpen] = useState(false);
+  const [isAdmin] = useState(initialIsAdmin);
+  const [selectedPhoto, setSelectedPhoto] = useState<GuestbookPhoto | null>(
+    null
+  );
 
   const fetchPhotos = useCallback(async () => {
     const { data, error } = await supabase
@@ -62,6 +60,24 @@ export default function GalleryView() {
       supabase.removeChannel(channel);
     };
   }, [fetchPhotos]);
+
+  async function handleDeletePhoto(photo: GuestbookPhoto) {
+    if (!isAdmin) return;
+    const confirmed = window.confirm(
+      `Delete this photo from ${photo.guest_name}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    const ok = await deletePhotoAsAdmin(photo.id);
+    if (ok) {
+      setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+      setSelectedPhoto((current) =>
+        current?.id === photo.id ? null : current
+      );
+    } else {
+      window.alert("Failed to delete photo. Please try again.");
+    }
+  }
 
   const slideshowPhotos = [...photos].reverse();
 
@@ -129,33 +145,14 @@ export default function GalleryView() {
               </button>
             </div>
 
-            {isAdmin ? (
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => exportMetadataCsv(photos)}
-                  className="flex items-center gap-1.5 rounded-full bg-emerald text-cream px-3 py-1.5 text-xs font-medium hover:bg-emerald-light"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Export CSV
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAdmin(false)}
-                  className="rounded-full border border-cream-deep p-1.5 text-emerald hover:bg-emerald-soft"
-                  aria-label="Lock admin mode"
-                >
-                  <Unlock className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
+            {isAdmin && (
               <button
                 type="button"
-                onClick={() => setGateOpen(true)}
-                className="flex items-center gap-1.5 rounded-full border border-cream-deep px-3 py-1.5 text-xs font-medium text-emerald hover:bg-emerald-soft"
+                onClick={() => exportMetadataCsv(photos)}
+                className="flex items-center gap-1.5 rounded-full bg-emerald text-cream px-3 py-1.5 text-xs font-medium hover:bg-emerald-light"
               >
-                <Lock className="h-3.5 w-3.5" />
-                Admin
+                <Download className="h-3.5 w-3.5" />
+                Export CSV
               </button>
             )}
           </div>
@@ -180,6 +177,8 @@ export default function GalleryView() {
                   photo={photo}
                   globalFilter={globalFilter}
                   isAdmin={isAdmin}
+                  onClick={() => setSelectedPhoto(photo)}
+                  onDelete={() => handleDeletePhoto(photo)}
                 />
               ))}
             </div>
@@ -189,29 +188,13 @@ export default function GalleryView() {
         <Slideshow photos={slideshowPhotos} globalFilter={globalFilter} />
       )}
 
-      <Link
-        href="/"
-        className="fixed bottom-5 right-5 z-30 flex items-center gap-2 rounded-full bg-emerald text-cream px-4 py-3 text-xs font-medium shadow-lg hover:bg-emerald-light"
-      >
-        <Camera className="h-4 w-4" />
-        Upload Photo
-      </Link>
-
-      <AdminGate
-        open={gateOpen}
-        onClose={() => setGateOpen(false)}
-        onUnlock={() => {
-          setIsAdmin(true);
-          setGateOpen(false);
-        }}
+      <PhotoLightbox
+        photo={selectedPhoto}
+        globalFilter={globalFilter}
+        isAdmin={isAdmin}
+        onClose={() => setSelectedPhoto(null)}
+        onDelete={() => selectedPhoto && handleDeletePhoto(selectedPhoto)}
       />
-
-      {isAdmin && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 rounded-full bg-emerald text-cream px-3 py-1.5 text-[11px] shadow-lg">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Admin mode active
-        </div>
-      )}
     </div>
   );
 }

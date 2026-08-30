@@ -52,9 +52,12 @@ create policy "Public can insert guestbook photos"
   to anon, authenticated
   with check (true);
 
--- No public update/delete policy is created on purpose: guests should not be
--- able to modify or remove entries once submitted. Manage/delete entries
--- from the Supabase Table Editor (as the project owner) if needed.
+-- No public update/delete policy is created on purpose: the anon key can
+-- never modify or remove entries. Deleting a photo is only possible via the
+-- app's /api/admin/delete-photo route, which authenticates the request with
+-- a passcode-gated cookie and then uses the Supabase service_role key
+-- (SUPABASE_SERVICE_ROLE_KEY) server-side to bypass RLS - the anon key used
+-- by the browser never gets delete access.
 
 -- 4. REALTIME -------------------------------------------------------------------
 -- Register the table with Supabase Realtime so the /gallery page can
