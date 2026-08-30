@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fdfbf6;
+  --cream-deep: #f5efe2;
+  --emerald: #1f4d3d;
+  --emerald-light: #2f6b52;
+  --emerald-soft: #e6efe9;
+  --gold: #c9a45c;
+  --ink: #2a2a26;
+
+  --background: var(--cream);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-emerald: var(--emerald);
+  --color-emerald-light: var(--emerald-light);
+  --color-emerald-soft: var(--emerald-soft);
+  --color-gold: var(--gold);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-sans-body);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Photo filter presets - applied both in the upload preview and on the   */
+/* live gallery via the same className, driven by `filter_style`.         */
+/* ---------------------------------------------------------------------- */
+.filter-original {
+  filter: none;
+}
+
+.filter-warm {
+  filter: sepia(0.35) saturate(1.35) contrast(1.05) brightness(1.05) hue-rotate(-6deg);
+}
+
+.filter-soft {
+  filter: brightness(1.12) contrast(0.92) saturate(0.95) blur(0.2px);
+}
+
+.filter-bw {
+  filter: grayscale(1) contrast(1.15) brightness(1.02);
+}
+
+.filter-vivid {
+  filter: saturate(1.6) contrast(1.15) brightness(1.03);
+}
+
+/* Subtle romantic scroll/paper texture backdrop */
+.wedding-backdrop {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(201, 164, 92, 0.10), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(31, 77, 61, 0.08), transparent 45%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
