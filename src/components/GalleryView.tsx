@@ -172,6 +172,12 @@ export default function GalleryView() {
               ))}
             </div>
           )}
+
+          <footer className="mt-10 pt-6 border-t border-cream-deep text-center">
+            <p className="font-serif text-2xl text-emerald">
+              The Wedding of Wahyu &amp; Wanda
+            </p>
+          </footer>
         </div>
       ) : (
         <Slideshow photos={slideshowPhotos} globalFilter={globalFilter} />
