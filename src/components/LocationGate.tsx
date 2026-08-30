@@ -16,14 +16,19 @@ const venue = getVenueConfig();
 
 export default function LocationGate({
   children,
+  bypass = false,
 }: {
   children: React.ReactNode;
+  /** Skip the location check entirely, e.g. for admins. */
+  bypass?: boolean;
 }) {
-  const [status, setStatus] = useState<Status>(venue ? "checking" : "allowed");
+  const [status, setStatus] = useState<Status>(
+    bypass || !venue ? "allowed" : "checking"
+  );
   const [distance, setDistance] = useState<number | null>(null);
 
   const checkLocation = useCallback(() => {
-    if (!venue) {
+    if (bypass || !venue) {
       setStatus("allowed");
       return;
     }
@@ -51,7 +56,7 @@ export default function LocationGate({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
-  }, []);
+  }, [bypass]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial permission/location check on mount
