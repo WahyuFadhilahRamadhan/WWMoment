@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Camera, ImagePlus, Loader2, X } from "lucide-react";
 import FilterSelector from "./FilterSelector";
 import SuccessModal from "./SuccessModal";
+import { useGuestName } from "./GuestNameGate";
 import { compressPhoto } from "@/lib/compressImage";
 import { buildPhotoPath, uploadPhotoWithProgress } from "@/lib/uploadPhoto";
 import { supabase, PHOTOS_TABLE } from "@/lib/supabase";
@@ -16,7 +17,7 @@ type Stage = "idle" | "compressing" | "uploading" | "saving";
 export default function UploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [guestName, setGuestName] = useState("");
+  const { guestName, changeName } = useGuestName();
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -53,7 +54,6 @@ export default function UploadForm() {
   }
 
   function resetForm() {
-    setGuestName("");
     setMessage("");
     resetPhoto();
     setStage("idle");
@@ -87,7 +87,7 @@ export default function UploadForm() {
       const { error: insertError } = await supabase
         .from(PHOTOS_TABLE)
         .insert({
-          guest_name: guestName.trim() || "Guest",
+          guest_name: guestName,
           message: message.trim() || null,
           photo_url: photoUrl,
           filter_style: filterStyle,
@@ -196,20 +196,20 @@ export default function UploadForm() {
           />
         </div>
 
-        {/* Guest name */}
-        <div>
-          <label className="block text-xs font-medium text-ink/60 mb-1.5 px-0.5">
-            Your Name
-          </label>
-          <input
-            type="text"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            placeholder="Guest"
+        {/* Guest name (set once on first visit) */}
+        <p className="px-0.5 text-center text-xs text-ink/60">
+          Sharing as{" "}
+          <span className="font-semibold text-emerald">{guestName}</span>
+          {" · "}
+          <button
+            type="button"
+            onClick={changeName}
             disabled={isSubmitting}
-            className="w-full rounded-xl border border-cream-deep bg-white/70 px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-emerald/30 focus:border-emerald disabled:opacity-60"
-          />
-        </div>
+            className="underline underline-offset-2 hover:text-emerald disabled:opacity-50"
+          >
+            Not you?
+          </button>
+        </p>
 
         {/* Message */}
         <div>
