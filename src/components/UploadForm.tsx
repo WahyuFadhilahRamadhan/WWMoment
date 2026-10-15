@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, ImagePlus, Loader2, X } from "lucide-react";
+import { Camera, Images, ImagePlus, Loader2, X } from "lucide-react";
 import FilterSelector from "./FilterSelector";
 import SuccessModal from "./SuccessModal";
 import { useGuestName } from "./GuestNameGate";
@@ -260,11 +260,20 @@ export default function UploadForm() {
           {isSubmitting ? "Sharing…" : "Share Your Moment"}
         </button>
 
+        <div className="flex items-center gap-3 pt-2" aria-hidden="true">
+          <span className="h-px flex-1 bg-cream-deep" />
+          <span className="text-[11px] uppercase tracking-[0.2em] text-ink/40">
+            or
+          </span>
+          <span className="h-px flex-1 bg-cream-deep" />
+        </div>
+
         <Link
           href="/gallery"
-          className="block text-center text-xs text-emerald/70 hover:text-emerald underline underline-offset-4"
+          className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-emerald py-3.5 text-sm font-medium tracking-wide text-emerald transition-colors hover:bg-emerald-soft"
         >
-          View the live wedding gallery
+          <Images className="h-4 w-4" />
+          View Wedding Gallery
         </Link>
       </form>
 
