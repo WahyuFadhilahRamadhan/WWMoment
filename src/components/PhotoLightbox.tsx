@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Quote, Trash2, X } from "lucide-react";
+import { Download, Loader2, Quote, Trash2, X } from "lucide-react";
 import { getFilterClassName } from "@/lib/filters";
 import { downloadSinglePhoto } from "@/lib/downloadPhotos";
+import { savePhotoToDevice } from "@/lib/savePhoto";
 import type { FilterStyle, GuestbookPhoto } from "@/lib/types";
 
 interface PhotoLightboxProps {
@@ -21,11 +23,28 @@ export default function PhotoLightbox({
   onClose,
   onDelete,
 }: PhotoLightboxProps) {
-  const filterClass = photo
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+
+  const effectiveFilter = photo
     ? globalFilter === "per-photo"
-      ? getFilterClassName(photo.filter_style)
-      : getFilterClassName(globalFilter)
-    : "";
+      ? photo.filter_style
+      : globalFilter
+    : "original";
+  const filterClass = getFilterClassName(effectiveFilter);
+
+  async function handleSave() {
+    if (!photo || saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      await savePhotoToDevice(photo, effectiveFilter);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -90,6 +109,24 @@ export default function PhotoLightbox({
                 <p className="mt-1 flex items-start justify-center gap-1.5 text-sm text-ink/70 leading-relaxed">
                   <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gold" />
                   {photo.message}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-emerald py-3 text-sm font-medium tracking-wide text-cream transition-colors hover:bg-emerald-light disabled:opacity-60"
+              >
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {saving ? "Saving…" : "Save Photo"}
+              </button>
+              {saveError && (
+                <p className="mt-2 text-xs text-red-600">
+                  Couldn&apos;t save the photo. Please try again.
                 </p>
               )}
               <p className="mt-3 font-serif text-xs text-emerald/70">

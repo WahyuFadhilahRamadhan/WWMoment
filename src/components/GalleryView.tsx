@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Download, Grid3x3, Play } from "lucide-react";
+import { ArrowLeft, Download, FolderArchive, Grid3x3, Loader2, Play } from "lucide-react";
 import PhotoCard from "./PhotoCard";
 import PhotoLightbox from "./PhotoLightbox";
 import Slideshow from "./Slideshow";
 import { supabase, PHOTOS_TABLE } from "@/lib/supabase";
-import { exportMetadataCsv } from "@/lib/downloadPhotos";
+import { downloadAllAsZip, exportMetadataCsv } from "@/lib/downloadPhotos";
 import { deletePhotoAsAdmin } from "@/lib/adminApi";
 import { FILTER_PRESETS } from "@/lib/filters";
 import type { FilterStyle, GuestbookPhoto } from "@/lib/types";
@@ -25,6 +25,7 @@ export default function GalleryView({ initialIsAdmin }: GalleryViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [globalFilter, setGlobalFilter] = useState<GlobalFilter>("per-photo");
   const [isAdmin] = useState(initialIsAdmin);
+  const [zipProgress, setZipProgress] = useState<{ done: number; total: number } | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<GuestbookPhoto | null>(
     null
   );
@@ -60,6 +61,20 @@ export default function GalleryView({ initialIsAdmin }: GalleryViewProps) {
       supabase.removeChannel(channel);
     };
   }, [fetchPhotos]);
+
+  async function handleDownloadZip() {
+    if (zipProgress || photos.length === 0) return;
+    setZipProgress({ done: 0, total: photos.length });
+    try {
+      await downloadAllAsZip(photos, (done, total) =>
+        setZipProgress({ done, total })
+      );
+    } catch {
+      window.alert("Failed to build the ZIP. Please try again.");
+    } finally {
+      setZipProgress(null);
+    }
+  }
 
   async function handleDeletePhoto(photo: GuestbookPhoto) {
     if (!isAdmin) return;
@@ -153,6 +168,23 @@ export default function GalleryView({ initialIsAdmin }: GalleryViewProps) {
               >
                 <Download className="h-3.5 w-3.5" />
                 Export CSV
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleDownloadZip}
+                disabled={!!zipProgress || photos.length === 0}
+                className="flex items-center gap-1.5 rounded-full border border-emerald px-3 py-1.5 text-xs font-medium text-emerald hover:bg-emerald-soft disabled:opacity-60"
+              >
+                {zipProgress ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FolderArchive className="h-3.5 w-3.5" />
+                )}
+                {zipProgress
+                  ? `${zipProgress.done}/${zipProgress.total}`
+                  : "Download ZIP"}
               </button>
             )}
           </div>
