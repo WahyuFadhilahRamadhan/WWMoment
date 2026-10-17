@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Loader2, Quote, Trash2, X } from "lucide-react";
+import { Download, Frame, Loader2, Quote, Trash2, X } from "lucide-react";
 import { getFilterClassName } from "@/lib/filters";
 import { downloadSinglePhoto } from "@/lib/downloadPhotos";
 import { savePhotoToDevice } from "@/lib/savePhoto";
@@ -23,7 +23,7 @@ export default function PhotoLightbox({
   onClose,
   onDelete,
 }: PhotoLightboxProps) {
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<"framed" | "plain" | null>(null);
   const [saveError, setSaveError] = useState(false);
 
   const effectiveFilter = photo
@@ -33,16 +33,16 @@ export default function PhotoLightbox({
     : "original";
   const filterClass = getFilterClassName(effectiveFilter);
 
-  async function handleSave() {
+  async function handleSave(framed: boolean) {
     if (!photo || saving) return;
-    setSaving(true);
+    setSaving(framed ? "framed" : "plain");
     setSaveError(false);
     try {
-      await savePhotoToDevice(photo, effectiveFilter);
+      await savePhotoToDevice(photo, effectiveFilter, { framed });
     } catch {
       setSaveError(true);
     } finally {
-      setSaving(false);
+      setSaving(null);
     }
   }
 
@@ -113,16 +113,29 @@ export default function PhotoLightbox({
               )}
               <button
                 type="button"
-                onClick={handleSave}
-                disabled={saving}
+                onClick={() => handleSave(true)}
+                disabled={!!saving}
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-emerald py-3 text-sm font-medium tracking-wide text-cream transition-colors hover:bg-emerald-light disabled:opacity-60"
               >
-                {saving ? (
+                {saving === "framed" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Frame className="h-4 w-4" />
+                )}
+                {saving === "framed" ? "Saving…" : "Save with Frame"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSave(false)}
+                disabled={!!saving}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-emerald/40 py-3 text-sm font-medium tracking-wide text-emerald transition-colors hover:bg-emerald-soft disabled:opacity-60"
+              >
+                {saving === "plain" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                {saving ? "Saving…" : "Save Photo"}
+                {saving === "plain" ? "Saving…" : "Save Photo Only"}
               </button>
               {saveError && (
                 <p className="mt-2 text-xs text-red-600">
